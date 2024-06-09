@@ -95,13 +95,11 @@ fn parse_robot(pair: pest::iterators::Pair<Rule>) -> Robot {
 
 pub fn parse_rdl(input: &str) -> Result<Robot, pest::error::Error<Rule>> {
     let pairs = RdlParser::parse(Rule::file, input)?;
-    println!("Parsed pairs: {:?}", pairs);  // Debug statement
 
     let first_span = pairs.clone().next().unwrap().as_span();
     let mut robot: Option<Robot> = None;
 
     for pair in pairs {
-        println!("Top level pair: {:?}", pair.as_rule());  // Debug statement
         if pair.as_rule() == Rule::robot {
             robot = Some(parse_robot(pair));
         }
