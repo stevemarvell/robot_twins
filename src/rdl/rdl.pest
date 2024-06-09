@@ -1,18 +1,27 @@
+DECIMAL = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
+IDENTIFIER = @{ !ASCII_DIGIT ~ (ASCII_ALPHANUMERIC | "_" | "-")+ }
 WHITESPACE = _{ " " | "\t" | NEWLINE }
 COMMENT = _{ "#" ~ (!NEWLINE ~ ANY)* ~ NEWLINE | "//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
 MULTI_LINE_COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
-IDENTIFIER = @{ !NUMBER ~ (ASCII_ALPHANUMERIC | "_" | "-")+ }
 
 category = { "\"" ~ IDENTIFIER ~ "\"" }
 
-robot = { "robot" ~  category  ~ "{" ~ parts ~ "}" }
+file = _{ SOI ~ robot ~ EOI }
+
+robot = { "robot" ~ category ~ "{" ~ parts ~ "}" }
 
 parts = { "parts" ~ "{" ~ part* ~ "}" }
-part = { "part" ~ category ~ "{" ~ attribute* ~ "}" }
+part = { "part" ~ category ~ "{" ~ attribute* ~ attachment_points? ~ "}" }
+
+attachment_points = { "attachment_points" ~ "{" ~ attachment_point* ~ "}" }
+attachment_point = { "attachment_point" ~ category ~ "{" ~ position ~ "}" }
+
+position = { "position" ~ "=" ~ "{" ~ x_field ~ "," ~ y_field ~ "," ~ z_field ~ "}" }
+x_field = { "x" ~ "=" ~ DECIMAL }
+y_field = { "y" ~ "=" ~ DECIMAL }
+z_field = { "z" ~ "=" ~ DECIMAL }
 
 attribute = { key ~ "=" ~ value }
 
 key = { IDENTIFIER }
 value = { "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
-
-file = _{ SOI ~ robot ~ EOI }

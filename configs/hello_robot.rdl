@@ -2,9 +2,33 @@ robot "hello_robot" {
     parts {
         part "torso" {
             name = "Torso"
+            material = "Steel"
+            attachment_points {
+                attachment_point "head" {
+                    position = { x = 0.0, y = 1.0, z = 0.0 }
+                }
+            }
         }
         part "head" {
             name = "Head"
+            material = "Plastic"
+            attachment_points {
+                attachment_point "torso" {
+                    position = { x = 0.0, y = -0.5, z = 0.0 }
+                }
+                attachment_point "nose" {
+                    position = { x = 0.0, y = 0.0, z = 0.5 }
+                }
+            }
+        }
+        part "nose" {
+            name = "Nose"
+            material = "Silicone"
+            attachment_points {
+                attachment_point "head" {
+                    position = { x = 0.0, y = 0.0, z = -0.1 }
+                }
+            }
         }
     }
 }
