@@ -1,0 +1,10 @@
+robot "hello_robot" {
+    parts {
+        part "torso" {
+            name = "Torso"
+        }
+        part "head" {
+            name = "Head"
+        }
+    }
+}

@@ -1,0 +1,18 @@
+WHITESPACE = _{ " " | "\t" | NEWLINE }
+COMMENT = _{ "#" ~ (!NEWLINE ~ ANY)* ~ NEWLINE | "//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
+MULTI_LINE_COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+IDENTIFIER = @{ !NUMBER ~ (ASCII_ALPHANUMERIC | "_" | "-")+ }
+
+category = { "\"" ~ IDENTIFIER ~ "\"" }
+
+robot = { "robot" ~  category  ~ "{" ~ parts ~ "}" }
+
+parts = { "parts" ~ "{" ~ part* ~ "}" }
+part = { "part" ~ category ~ "{" ~ attribute* ~ "}" }
+
+attribute = { key ~ "=" ~ value }
+
+key = { IDENTIFIER }
+value = { "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
+
+file = _{ SOI ~ robot ~ EOI }
