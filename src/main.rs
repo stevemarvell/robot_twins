@@ -1,54 +1,26 @@
+mod setup;
+
 use bevy::prelude::*;
+use crate::setup::SetupPlugin;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_systems(Startup, setup)
-        .add_systems(Update, rotate_cube)
+        .add_plugins((DefaultPlugins, SetupPlugin))
+        .add_systems(Startup, add_the_cube)
+        .add_systems(Startup, add_child_cube.after(add_the_cube))
+        .add_systems(Update, (rotate_the_cube, rotate_child_cube))
         .run();
 }
 
 #[derive(Component)]
 struct TheCube;
 
-fn setup(mut commands: Commands,
-         mut materials: ResMut<Assets<StandardMaterial>>,
-         mut meshes: ResMut<Assets<Mesh>>) {
+#[derive(Component)]
+struct ChildCube;
 
-    // Add a camera
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 5.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    });
-
-    // Add a directional light
-    commands.spawn(DirectionalLightBundle {
-        directional_light: DirectionalLight {
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform::from_rotation(Quat::from_euler(
-            EulerRot::XYZ, -std::f32::consts::FRAC_PI_4, -std::f32::consts::FRAC_PI_4, 0.0,
-        )),
-        ..default()
-    });
-
-    let grass = Color::Rgba {
-        red: 34.0 / 255.0,
-        green: 139.0 / 255.0,
-        blue: 34.0 / 255.0,
-        alpha: 1.0,
-    };
-
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Plane3d::default().mesh().size(50.0, 50.0)),
-        material: materials.add(StandardMaterial {
-            base_color: grass,
-            perceptual_roughness: 1.0,
-            ..default()
-        }),
-        ..default()
-    });
+fn add_the_cube(mut commands: Commands,
+                mut materials: ResMut<Assets<StandardMaterial>>,
+                mut meshes: ResMut<Assets<Mesh>>) {
 
     // Add a cube
     commands.spawn((
@@ -65,8 +37,39 @@ fn setup(mut commands: Commands,
         }));
 }
 
-fn rotate_cube(mut query: Query<&mut Transform, With<TheCube>>, time: Res<Time>) {
+fn add_child_cube(
+    mut commands: Commands,
+    query: Query<Entity, With<TheCube>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+) {
+    if let Ok(parent_entity) = query.get_single() {
+        commands.entity(parent_entity).with_children(|parent| {
+            parent.spawn((
+                Name::new("ChildCube"),
+                ChildCube,
+                PbrBundle {
+                    mesh: meshes.add(Cuboid::new(0.5, 0.5, 0.5)),
+                    material: materials.add(StandardMaterial {
+                        base_color: Color::rgb(1.0, 0.0, 0.0), // Different color for distinction
+                        ..default()
+                    }),
+                    transform: Transform::from_xyz(0.0, 0.75, 0.0),
+                    ..default()
+                },
+            ));
+        });
+    }
+}
+
+fn rotate_the_cube(mut query: Query<&mut Transform, With<TheCube>>, time: Res<Time>) {
     for mut transform in query.iter_mut() {
         transform.rotation = transform.rotation * Quat::from_rotation_y(2.0 * time.delta_seconds());
+    }
+}
+
+fn rotate_child_cube(mut query: Query<&mut Transform, With<ChildCube>>, time: Res<Time>) {
+    for mut transform in query.iter_mut() {
+        transform.rotation = transform.rotation * Quat::from_rotation_y(0.25 * time.delta_seconds());
     }
 }
