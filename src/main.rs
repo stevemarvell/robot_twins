@@ -8,7 +8,7 @@ fn main() {
         .add_plugins((DefaultPlugins, SetupPlugin))
         .add_systems(Startup, add_the_cube)
         .add_systems(Startup, add_child_cube.after(add_the_cube))
-        .add_systems(Update, (rotate_the_cube, rotate_child_cube))
+        .add_systems(Update, (tumble_the_cube, rotate_child_cube))
         .run();
 }
 
@@ -32,7 +32,7 @@ fn add_the_cube(mut commands: Commands,
                 base_color: Color::rgb(0.0, 0.0, 1.0),
                 ..default()
             }),
-            transform: Transform::from_xyz(0.0, 0.5, 0.0),
+            transform: Transform::from_xyz(0.0, 1.0, 0.0),
             ..default()
         }));
 }
@@ -65,6 +65,15 @@ fn add_child_cube(
 fn rotate_the_cube(mut query: Query<&mut Transform, With<TheCube>>, time: Res<Time>) {
     for mut transform in query.iter_mut() {
         transform.rotation = transform.rotation * Quat::from_rotation_y(2.0 * time.delta_seconds());
+    }
+}
+
+fn tumble_the_cube(mut query: Query<&mut Transform, With<TheCube>>, time: Res<Time>) {
+    for mut transform in query.iter_mut() {
+        let rotation_speed = 2.0 * time.delta_seconds();
+        transform.rotation = transform.rotation * Quat::from_rotation_x(rotation_speed)
+            * Quat::from_rotation_y(rotation_speed)
+            * Quat::from_rotation_z(rotation_speed);
     }
 }
 
